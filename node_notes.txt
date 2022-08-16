@@ -1,0 +1,5 @@
+* To include a module, use the require() function with the name of the module
+
+_ remembers last data
+
+tab key opens node existing commands
