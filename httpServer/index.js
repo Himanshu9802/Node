@@ -8,6 +8,10 @@
 // -> If the response from the HTTP server is supposed to be displayed as HTML, you should include an HTTP header with the correct content type
 
 const http = require("http");
+const fs = require("fs");
+
+const data = fs.readFileSync(`${__dirname}/userAPI/userapi.json`, "utf-8");
+const objData = JSON.parse(data);
 
 const server = http.createServer((req, res) => {
   // console.log(req.url);
@@ -17,6 +21,9 @@ const server = http.createServer((req, res) => {
   } else if (req.url == "/about") {
     console.log("About Page");
     res.end("About");
+  } else if (req.url == "/user") {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(data);
   } else {
     res.writeHead(404, { "Content-type": "text/html" });
     res.end("<strong>404 Page Not Found</strong>");
