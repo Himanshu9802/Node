@@ -1,35 +1,42 @@
-const http = require('http');
-const fs = require('fs');
-var requests = require('requrests');
+const http = require("http");
+const fs = require("fs");
+var requests = require("requests");
 
-const homefile = fs.readFileSync("home.html",'utf-8');
+const homefile = fs.readFileSync("home.html", "utf-8");
 
-const replaceVal = (tempVal, orgVal) =>{
-    let temprature = tempVal.replace("{%tempVal%", orgVal.main.temp);
-    temprature = tempVal.replace("{%tempMin%", orgVal.main.temp_min);
-    temprature = tempVal.replace("{%tempMax%", orgVal.main.temp_max);
+const replaceVal = (tempVal, orgVal) => {
+  let temperature = tempVal.replace("{%tempVal%}", orgVal.main.temp);
+  temperature = temperature.replace("{%tempMin%}", orgVal.main.temp_min);
+  temperature = temperature.replace("{%tempMax%}", orgVal.main.temp_max);
 
-    temprature = tempVal.replace("{%location%", orgVal.main.country);
-    temprature = tempVal.replace("{%country%", orgVal.main.temp);
-}
+  temperature = temperature.replace("{%location%}", orgVal.name);
+  temperature = temperature.replace("{%country%}", orgVal.sys.country);
 
-const server = http.createServer((req, res)=>{
-    if(req.url == '/'){
-        requests('https://api.openweathermap.org/data/2.5/weather?q=Ahmedabad&appid=d6246d71efb3126487d0d3e72ad05144',{streaming})
-        .on('data',(chunk)=>{
-            const objData = JSON.parse(chunk);
-            const arrData = [objData];
-            console.log(arrData[0].main.temp);
+  temperature = temperature.replace("{%tempstatus%}", orgVal.weather[0].main);
 
-            const realData = arrData.map((val)=>{
-                replaceVal(homefile, val);
-            })
-        })
-        .on('end', (err)=>{
-            if (err) return console.log('connection closed due to errors', err);
-            console.log('end');
-        });
-    }
+  return temperature;
+};
+
+const server = http.createServer((req, res) => {
+  if (req.url == "/") {
+    requests(
+      "https://api.openweathermap.org/data/2.5/weather?q=Ahmedabad&appid=d6246d71efb3126487d0d3e72ad05144"
+    )
+      .on("data", (chunk) => {
+        const objData = JSON.parse(chunk);
+        const arrData = [objData];
+        // console.log("🚀 ~ file: index.js ~ line 22 ~ .on ~ arrData", arrData[0].main.temp);
+
+        const realTimeData = arrData
+          .map((val) => replaceVal(homefile, val))
+          .join("");
+        res.write(realTimeData);
+      })
+      .on("end", (err) => {
+        if (err) return console.log("connection closed due to errors", err);
+        console.log("end");
+      });
+  }
 });
 
-server.listen(1000,'127.0.0.1');
+server.listen(10000, "127.0.0.1");
